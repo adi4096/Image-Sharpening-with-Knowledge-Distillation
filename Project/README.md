@@ -5,7 +5,7 @@ This file focuses on describing the contents of each subdirectory.
 
 ---
 
-## Dataset/
+## Dataset
 
 Contains dataset-related resources.
 
@@ -14,7 +14,7 @@ Contains dataset-related resources.
 
 ---
 
-## Notebooks/
+## Notebooks
 
 Contains all Jupyter notebooks used for training, evaluation, and ensemble inference.
 
@@ -29,7 +29,7 @@ Contains all Jupyter notebooks used for training, evaluation, and ensemble infer
 
 ---
 
-## Restomer/
+## Restomer
 
 Includes files related to the teacher model (Restormer).
 
@@ -40,7 +40,7 @@ Includes files related to the teacher model (Restormer).
 
 ---
 
-## Weights/
+## Weights
 
 Holds the trained weights of the student models.
 
