@@ -1,0 +1,78 @@
+import os, cv2, shutil, random
+from tqdm import tqdm
+from sklearn.model_selection import train_test_split
+
+source_dir = "data/high_res"        
+target_root = "data/processed_dataset"
+valid_images = []
+
+# This is to filter images to standard resolution i.e. in our case 1200*800
+print(" Filtering images divisible by 8...")
+for fname in tqdm(os.listdir(source_dir)): 
+    if fname.lower().endswith(('.jpg', '.png')):
+        fpath = os.path.join(source_dir, fname)
+        img = cv2.imread(fpath)
+        if img is None:
+            continue
+        h, w = img.shape[:2]
+        if h % 8 == 0 and w % 8 == 0:
+            valid_images.append(fname)
+print(f" Valid images: {len(valid_images)}")
+
+random.seed(42)
+train_imgs, test_imgs = train_test_split(valid_images, test_size=0.2, random_state=42)
+train_A, train_B = train_test_split(train_imgs, test_size=0.5, random_state=42)
+showcase_imgs = random.sample(test_imgs, min(50, len(test_imgs)))
+
+#For getting a wider variety of images for training we are breaking down the images into patches
+def extract_patches(img, patch_size=256, stride=256):
+    patches = []
+    h, w = img.shape[:2]
+    for y in range(0, h - patch_size + 1, stride):
+        for x in range(0, w - patch_size + 1, stride):
+            patch = img[y:y+patch_size, x:x+patch_size]
+            patches.append(patch)
+    return patches
+
+def save_patches_from_list(file_list, folder_name, patch_size=256, stride=256):
+    dest = os.path.join(target_root, folder_name)
+    if os.path.exists(dest):
+        shutil.rmtree(dest)
+    os.makedirs(dest, exist_ok=True)
+
+    patch_id = 0
+    for fname in tqdm(file_list, desc=f" Creating patches for {folder_name}"):
+        img = cv2.imread(os.path.join(source_dir, fname))
+        if img is None:
+            continue
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        h, w = img.shape[:2]
+        h, w = h - (h % 8), w - (w % 8)
+        img = cv2.resize(img, (w, h))
+        patches = extract_patches(img, patch_size=patch_size, stride=stride)
+        for patch in patches:
+            out_path = os.path.join(dest, f"{patch_id:06}.png")
+            cv2.imwrite(out_path, cv2.cvtColor(patch, cv2.COLOR_RGB2BGR))
+            patch_id += 1
+
+def copy_images(file_list, folder_name):
+    dest = os.path.join(target_root, folder_name)
+    if os.path.exists(dest):
+        shutil.rmtree(dest)
+    os.makedirs(dest, exist_ok=True)
+
+    for fname in tqdm(file_list, desc=f" Copying full images to {folder_name}"):
+        src_path = os.path.join(source_dir, fname)
+        dst_path = os.path.join(dest, fname)
+        shutil.copy(src_path, dst_path)
+            
+save_patches_from_list(train_A, "train_A", patch_size=256, stride=256)   
+save_patches_from_list(train_B, "train_B", patch_size=256, stride=256)
+copy_images(test_imgs, "test")
+copy_images(showcase_imgs, "showcase")
+
+print("\n Dataset Preparation Complete:")
+print(f" Train A: {len(os.listdir(os.path.join(target_root, 'train_A')))} patches")
+print(f" Train B: {len(os.listdir(os.path.join(target_root, 'train_B')))} patches")
+print(f" Test: {len(os.listdir(os.path.join(target_root, 'test')))} full images")
+print(f" Showcase: {len(os.listdir(os.path.join(target_root, 'showcase')))} full images")
