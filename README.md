@@ -1,6 +1,6 @@
-# Image Sharpening using Knowledge Distillation
+# Overview: Image Sharpening using Knowledge Distillation
 
-A lightweight student model is trained to sharpen blurred images by learning from a high-capacity teacher model (Restormer). Two students are trained independently on separate datasets (mine and my friend's), and their outputs are combined using an ensemble strategy.
+A lightweight student model is trained to sharpen blurred images by learning from a heavy teacher model (Restormer). Two students are trained independently on separate datasets (mine and my friend's), and their outputs are combined using an ensemble strategy.
 
 ##  Features
 
